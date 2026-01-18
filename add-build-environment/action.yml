@@ -1,0 +1,13 @@
+name: "Add Build environment"
+description: "Prepares the basic build environment for compiling mods. This is a shortcut for installing the .NET version used by the game (currently .NET 6) and creating a 'game folder' with reference assemblies."
+
+runs:
+    using: "composite"
+    steps:
+        - name: Install .NET 6
+          uses: actions/setup-dotnet@v4
+          with:
+              dotnet-version: 6.0.x
+
+        - name: Add reference assemblies
+          uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
