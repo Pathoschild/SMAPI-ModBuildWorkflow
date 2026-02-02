@@ -28,7 +28,7 @@ runs:
                   $fullPath = $projectFile.FullName
                   $relativePath = Resolve-Path -Path $fullPath -Relative
 
-                  $xml = [xml](Get-Content $fullPath)
+                  $xml = [xml](Get-Content $fullPath -Raw)
 
                   # skip if it doesn't produce zip
                   if ('${{inputs.only_zipped}}' -eq 'true') {

@@ -26,6 +26,11 @@ runs:
         - name: Upload artifacts
           shell: pwsh
           run: |
+              if (!(Test-Path -Path "${{inputs.path}}")) {
+                  Write-Host "No zip files found at path '${{inputs.path}}'."
+                  exit 1
+              }
+
               foreach ($file in (Get-ChildItem -Path "${{inputs.path}}" -Filter "*.zip")) {
                   Get-Content $file.FullName -AsByteStream | gh-actions-artifact-client.js upload $file.BaseName
               }
