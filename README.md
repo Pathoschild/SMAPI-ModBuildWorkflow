@@ -201,6 +201,11 @@ You can optionally override the configuration:
   with:
       # The .NET SDK version to install. This should usually be left as-is.
       dotnet_version: 6.0.x
+
+      # Whether to build the mods using the selected .NET version (not just target it). This can
+      # avoid compatibility issues in some cases, but prevents using newer .NET features in your
+      # code.
+      force_build_with_dotnet_version: false
 ```
 
 ## `add-reference-assemblies`
