@@ -188,15 +188,20 @@ This action sets up the basic build environment:
 - installs the .NET version used by the game (currently .NET 6);
 - creates a game folder containing [reference assemblies][].
 
-The usage is:
+The basic usage sets up the default environment:
 ```yaml
 - name: Add build environment
   uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment
 ```
 
-This action isn't configurable, since it's a shortcut for the default setup. To customize it, use
-the [`actions/setup-dotnet`](https://github.com/actions/setup-dotnet) and
-[`add-reference-assemblies`](#add-reference-assemblies) steps directly instead.
+You can optionally override the configuration:
+```yaml
+- name: Add build environment
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment
+  with:
+      # The .NET SDK version to install. This should usually be left as-is.
+      dotnet_version: 6.0.x
+```
 
 ## `add-reference-assemblies`
 This action creates a game folder containing [reference assemblies][] (from
