@@ -306,6 +306,9 @@ You can optionally override the configuration:
       create_attestations: false
 ```
 
+# See also
+* [Release notes](_docs/release-notes.md)
+
 [attestations]: https://docs.github.com/en/actions/concepts/security/artifact-attestations
 [Git flow]: https://www.gitkraken.com/learn/git/git-flow
 [GitHub Actions]: https://github.com/features/actions
