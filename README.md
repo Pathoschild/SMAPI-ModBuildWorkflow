@@ -22,6 +22,10 @@
   * [`add-reference-assemblies`](#add-reference-assemblies)
   * [`set-prerelease-versions`](#set-prerelease-versions)
   * [`upload-release-artifacts`](#upload-release-artifacts)
+* [More actions](#more-actions)
+  * [Upload to GitHub](#upload-to-github)
+  * [Upload to Nexus Mods](#upload-to-nexus-mods)
+* [See also](#see-also)
 
 ## What is this?
 These instructions add a build workflow to your GitHub repo which contains C# mods. It will run
@@ -328,12 +332,73 @@ You can reference these as tokens in any later workflow step. For example, if yo
 `id: create-artifacts`, then you can get the attestation URL using
 `${{steps.create-artifacts.outputs.attestation-url}}`.
 
+# More actions
+There's a [rich ecosystem of actions](https://github.com/marketplace?type=actions) you can add to
+your workflow. This section covers a few examples which are particularly relevant to Stardew Valley
+mod authors.
+
+## Upload to GitHub
+Creating a [GitHub release][] lets players download your mods directly from your GitHub repo.
+
+See [ncipollo/release-action](https://github.com/ncipollo/release-action) for the available options.
+
+For example, you can create a release with all the zip files in the `_releases` folder when a tag is
+pushed:
+```yaml
+- name: Upload to GitHub
+  uses: ncipollo/release-action@v1
+  if: github.ref_type == 'tag'
+  with:
+      artifacts: '_releases/*.zip'
+      name: 'Mod version ${{github.ref_name}}'
+      body: |
+          See [release notes][].
+
+          [release notes]: docs/release-notes.md#${{github.ref_name}}
+```
+
+If your workflow [creates an attestation](#upload-release-artifacts), you can reference it in any of
+those fields. For example:
+
+```yaml
+body: See [attestation](${{steps.create-artifacts.outputs.attestation-url}}).
+```
+
+The action has many other options to customize your workflow, like...
+- creating a draft release;
+- creating a Git tag;
+- updating an existing release;
+- auto-generating release notes;
+- etc.
+
+## Upload to Nexus Mods
+You can deploy a mod update to your [Nexus Mods][] mod page automatically, usually based on a
+release tag or branch.
+
+See [Nexus-Mods/upload-action](https://github.com/Nexus-Mods/upload-action) to configure the
+required options.
+
+For example, you can upload an update with a compiled zip file when a tag is pushed (using the tag
+name as the version):
+```yaml
+- name: Upload to Nexus Mods
+  uses: Nexus-Mods/upload-action@<tag>
+  if: github.ref_type == 'tag'
+  with:
+    api_key: ${{secrets.NEXUS_MODS_API_KEY}}
+    file_group_id: <file_group_id>
+    filename: _releases/YourMod-${{github.ref_name}}.zip
+    version: ${{github.ref_name}}
+```
+
 # See also
 * [Release notes](_docs/release-notes.md)
 
 [attestations]: https://docs.github.com/en/actions/concepts/security/artifact-attestations
 [Git flow]: https://www.gitkraken.com/learn/git/git-flow
 [GitHub Actions]: https://github.com/features/actions
+[GitHub release]: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
+[Nexus Mods]: https://www.nexusmods.com/games/stardewvalley
 [reference assemblies]: https://learn.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies
 
 [mod build package]: https://smapi.io/package
