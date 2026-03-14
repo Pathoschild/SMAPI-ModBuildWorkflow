@@ -1,11 +1,5 @@
 ﻿This repo lets you automatically build your [SMAPI][] (C#) mods through free [GitHub Actions][].
 
-> [!CAUTION]  
-> The build workflow is still experimental and unversioned. It may change at any time, which may
-> break your automated mod builds.
->
-> Consider waiting for the 1.0.0 release, unless you're fine updating your repo whenever it changes.
-
 # Contents
 * [What is this?](#what-is-this)
 * [Usage](#usage)
@@ -98,17 +92,17 @@ steps.
                      fetch-tags: false
 
                - name: Add build environment
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment@v1
 
                - name: Set prerelease versions
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
                  if: github.ref != env.RELEASE_REF
 
                - name: Build mods
                  run: dotnet build --configuration Release
 
                - name: Upload release zips
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
                  with:
                      create_attestations: ${{github.ref == env.RELEASE_REF}}
       ```
@@ -222,13 +216,13 @@ The basic usage adds them in a standard location for Linux, which will be auto-d
 build the mods:
 ```yaml
 - name: Add reference assemblies
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1
 ```
 
 You can optionally override the configuration:
 ```yaml
 - name: Add reference assemblies
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1
   with:
       # The GitHub repository from which to fetch the reference assemblies, in the form 'owner/repo'.
       repository: StardewModders/mod-reference-assemblies
@@ -260,14 +254,14 @@ The basic usage applies the change for all projects which create a release zip u
 version format. In most cases, you should add `if:` to only do it for non-release branches:
 ```yaml
 - name: Set prerelease versions
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
   if: github.ref != env.RELEASE_REF # defined in default workflow
 ```
 
 You can optionally override the configuration:
 ```yaml
 - name: Set prerelease versions
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
   if: github.ref != env.RELEASE_REF # defined in default workflow
   with:
       # Whether to only change projects which create a mod release zip.
@@ -293,7 +287,7 @@ The basic usage assumes the `.zip` files are in a `_releases` folder, and create
 for release builds:
 ```yaml
 - name: Upload release zips
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
   with:
       create_attestations: ${{github.ref == env.RELEASE_REF}}
 ```
@@ -301,7 +295,7 @@ for release builds:
 You can optionally override the configuration:
 ```yaml
 - name: Upload release zips
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
   with:
       # The path to the folder containing release zips.
       path: _releases

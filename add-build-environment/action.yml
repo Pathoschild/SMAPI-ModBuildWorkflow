@@ -29,4 +29,4 @@ runs:
           if: ${{inputs.force_build_with_dotnet_version == 'true'}}
 
         - name: Add reference assemblies
-          uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+          uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1
