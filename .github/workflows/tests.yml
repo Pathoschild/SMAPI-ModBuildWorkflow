@@ -1,0 +1,222 @@
+name: Run integration tests
+on: push
+jobs:
+    ##########
+    ## add-build-environment
+    ##########
+    AddBuildEnv_Default:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add build environment
+              uses: ./add-build-environment
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-build-environment.ps1
+
+    AddBuildEnv_CustomDotNetVersion:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add build environment
+              uses: ./add-build-environment
+              with:
+                dotnet_version: 7.0.x
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-build-environment.ps1 -DotNetMajorVersion 7 -DotNetMinorVersion 0
+
+    AddBuildEnv_CustomDotNetVersion_ForceBuildWithVersion:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add build environment
+              uses: ./add-build-environment
+              with:
+                dotnet_version: 7.0.x
+                force_build_with_dotnet_version: true
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-build-environment.ps1 -DotNetMajorVersion 7 -DotNetMinorVersion 0 -ForceBuildWithDotNetVersion true
+
+
+    ##########
+    ## add-reference-assemblies
+    ##########
+    AddRefAssemblies_Default:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add reference assemblies
+              uses: ./add-reference-assemblies
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-reference-assemblies.ps1
+
+    AddRefAssemblies_CustomPath:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add reference assemblies
+              uses: ./add-reference-assemblies
+              with:
+                path: $HOME/Custom Stardew Valley Path
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-reference-assemblies.ps1 -Path "$HOME/Custom Stardew Valley Path"
+
+    AddRefAssemblies_CustomRef:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add reference assemblies
+              uses: ./add-reference-assemblies
+              with:
+                ref: b87f60b35344f30f9aa6bfc40920bcd4a2c7d347
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-reference-assemblies.ps1 -Ref b87f60b35344f30f9aa6bfc40920bcd4a2c7d347
+
+    AddRefAssemblies_CustomRepo:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Add reference assemblies
+              uses: ./add-reference-assemblies
+              with:
+                repository: Pathoschild/SMAPI # has a DLL under `build/0Harmony.dll` to test
+                Ref: '4.4.0'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-add-reference-assemblies.ps1 -Repository Pathoschild/SMAPI -Ref '4.4.0'
+
+
+    ##########
+    ## set-prerelease-versions
+    ##########
+    SetPrereleaseVersions_Default:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create test solution
+              id: setup
+              run: pwsh ./_tests/utilities/create-solution.ps1 -SolutionPath '@defaultSolution'
+
+            - name: Set prerelease versions
+              uses: ./set-prerelease-versions
+
+            - name: Run tests
+              run: pwsh ./_tests/test-set-prerelease-versions.ps1 -SolutionPath '@defaultSolution'
+
+    SetPrereleaseVersions_IncludeZipped:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create test solution
+              id: setup
+              run: pwsh ./_tests/utilities/create-solution.ps1 -SolutionPath '@includeZippedSolution'
+
+            - name: Set prerelease versions
+              uses: ./set-prerelease-versions
+              with:
+                only_zipped: 'false'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-set-prerelease-versions.ps1 -SolutionPath '@includeZippedSolution' -OnlyZipped false
+
+    SetPrereleaseVersions_CustomTimestamp:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create test solution
+              id: setup
+              run: pwsh ./_tests/utilities/create-solution.ps1 -SolutionPath '@customTimestampSolution'
+
+            - name: Set prerelease versions
+              uses: ./set-prerelease-versions
+              with:
+                timestamp_format: 'yyyy-MM-dd'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-set-prerelease-versions.ps1 -SolutionPath '@customTimestampSolution' -TimestampFormat 'yyyy-MM-dd'
+
+    SetPrereleaseVersions_CustomTag:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create test solution
+              id: setup
+              run: pwsh ./_tests/utilities/create-solution.ps1 -SolutionPath '@customTagSolution'
+            - name: Set prerelease versions
+              uses: ./set-prerelease-versions
+              with:
+                tag_format: '-beta.1'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-set-prerelease-versions.ps1 -SolutionPath '@customTagSolution' -Tag '-beta.1'
+
+    SetPrereleaseVersions_CustomTagAndTimestamp:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create test solution
+              id: setup
+              run: pwsh ./_tests/utilities/create-solution.ps1 -SolutionPath '@customTagAndTimestampSolution'
+
+            - name: Set prerelease versions
+              uses: ./set-prerelease-versions
+              with:
+                tag_format: '-beta.{{timestamp}}'
+                timestamp_format: 'yyyy-MM-dd'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-set-prerelease-versions.ps1 -SolutionPath '@customTagAndTimestampSolution' -Tag '-beta.{{timestamp}}' -TimestampFormat 'yyyy-MM-dd'
+
+
+    ##########
+    ## upload-release-artifacts
+    ##########
+    UploadReleaseArtifacts:
+        runs-on: ubuntu-latest
+        permissions:
+          id-token: write     # for attestation
+          attestations: write # for attestation
+        steps:
+            - name: Fetch tests
+              uses: actions/checkout@v4
+
+            - name: Create '_releases' folder
+              run: pwsh ./_tests/utilities/create-releases-folder.ps1 -FolderName '_releases'
+
+            - name: Upload release artifacts
+              id: upload
+              uses: ./upload-release-artifacts
+              with:
+                create_attestations: 'true'
+
+            - name: Run tests
+              run: pwsh ./_tests/test-upload-release-artifacts.ps1 -FolderName "_releases" -AttestationId "${{steps.upload.outputs.attestation-id}}" -AttestationUrl "${{steps.upload.outputs.attestation-url}}" -AttestationBundlePath "${{steps.upload.outputs.attestation-bundle-path}}"

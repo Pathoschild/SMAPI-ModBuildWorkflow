@@ -1,13 +1,32 @@
 name: "Add Build environment"
 description: "Prepares the basic build environment for compiling mods. This is a shortcut for installing the .NET version used by the game (currently .NET 6) and creating a 'game folder' with reference assemblies."
 
+inputs:
+    dotnet_version:
+        description: "The .NET SDK version to install. This should usually be left as-is. Default: `6.0.x`."
+        required: false
+        default: "6.0.x"
+
+    force_build_with_dotnet_version:
+        description: "Whether to build the mods using the selected .NET version (not just target it). This can avoid compatibility issues in some cases, but prevents using newer .NET features in your code. Default: `false`."
+        required: false
+        default: "false"
+
 runs:
     using: "composite"
     steps:
-        - name: Install .NET 6
+        - name: Install .NET ${{inputs.dotnet_version}}
+          id: install-dotnet
           uses: actions/setup-dotnet@v4
           with:
-              dotnet-version: 6.0.x
+              dotnet-version: ${{inputs.dotnet_version}}
+
+        - name: Force build to use .NET ${{steps.install-dotnet.outputs.dotnet-version}}
+          shell: bash
+          run: |
+              echo "Creating global.json to pin .NET version to ${{steps.install-dotnet.outputs.dotnet-version}}"
+              echo '{"sdk":{"version":"${{steps.install-dotnet.outputs.dotnet-version}}"}}' > global.json
+          if: ${{inputs.force_build_with_dotnet_version == 'true'}}
 
         - name: Add reference assemblies
-          uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+          uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1

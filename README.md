@@ -1,11 +1,5 @@
 ﻿This repo lets you automatically build your [SMAPI][] (C#) mods through free [GitHub Actions][].
 
-> [!CAUTION]  
-> The build workflow is still experimental and unversioned. It may change at any time, which may
-> break your automated mod builds.
->
-> Consider waiting for the 1.0.0 release, unless you're fine updating your repo whenever it changes.
-
 # Contents
 * [What is this?](#what-is-this)
 * [Usage](#usage)
@@ -22,6 +16,10 @@
   * [`add-reference-assemblies`](#add-reference-assemblies)
   * [`set-prerelease-versions`](#set-prerelease-versions)
   * [`upload-release-artifacts`](#upload-release-artifacts)
+* [More actions](#more-actions)
+  * [Upload to GitHub](#upload-to-github)
+  * [Upload to Nexus Mods](#upload-to-nexus-mods)
+* [See also](#see-also)
 
 ## What is this?
 These instructions add a build workflow to your GitHub repo which contains C# mods. It will run
@@ -94,17 +92,17 @@ steps.
                      fetch-tags: false
 
                - name: Add build environment
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment@v1
 
                - name: Set prerelease versions
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
                  if: github.ref != env.RELEASE_REF
 
                - name: Build mods
                  run: dotnet build --configuration Release
 
                - name: Upload release zips
-                 uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+                 uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
                  with:
                      create_attestations: ${{github.ref == env.RELEASE_REF}}
       ```
@@ -188,15 +186,25 @@ This action sets up the basic build environment:
 - installs the .NET version used by the game (currently .NET 6);
 - creates a game folder containing [reference assemblies][].
 
-The usage is:
+The basic usage sets up the default environment:
 ```yaml
 - name: Add build environment
   uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment
 ```
 
-This action isn't configurable, since it's a shortcut for the default setup. To customize it, use
-the [`actions/setup-dotnet`](https://github.com/actions/setup-dotnet) and
-[`add-reference-assemblies`](#add-reference-assemblies) steps directly instead.
+You can optionally override the configuration:
+```yaml
+- name: Add build environment
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-build-environment
+  with:
+      # The .NET SDK version to install. This should usually be left as-is.
+      dotnet_version: 6.0.x
+
+      # Whether to build the mods using the selected .NET version (not just target it). This can
+      # avoid compatibility issues in some cases, but prevents using newer .NET features in your
+      # code.
+      force_build_with_dotnet_version: false
+```
 
 ## `add-reference-assemblies`
 This action creates a game folder containing [reference assemblies][] (from
@@ -208,13 +216,13 @@ The basic usage adds them in a standard location for Linux, which will be auto-d
 build the mods:
 ```yaml
 - name: Add reference assemblies
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1
 ```
 
 You can optionally override the configuration:
 ```yaml
 - name: Add reference assemblies
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/add-reference-assemblies@v1
   with:
       # The GitHub repository from which to fetch the reference assemblies, in the form 'owner/repo'.
       repository: StardewModders/mod-reference-assemblies
@@ -246,14 +254,14 @@ The basic usage applies the change for all projects which create a release zip u
 version format. In most cases, you should add `if:` to only do it for non-release branches:
 ```yaml
 - name: Set prerelease versions
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
   if: github.ref != env.RELEASE_REF # defined in default workflow
 ```
 
 You can optionally override the configuration:
 ```yaml
 - name: Set prerelease versions
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/set-prerelease-versions@v1
   if: github.ref != env.RELEASE_REF # defined in default workflow
   with:
       # Whether to only change projects which create a mod release zip.
@@ -279,7 +287,7 @@ The basic usage assumes the `.zip` files are in a `_releases` folder, and create
 for release builds:
 ```yaml
 - name: Upload release zips
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
   with:
       create_attestations: ${{github.ref == env.RELEASE_REF}}
 ```
@@ -287,7 +295,7 @@ for release builds:
 You can optionally override the configuration:
 ```yaml
 - name: Upload release zips
-  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v0
+  uses: Pathoschild/SMAPI-ModBuildWorkflow/upload-release-artifacts@v1
   with:
       # The path to the folder containing release zips.
       path: _releases
@@ -306,9 +314,85 @@ You can optionally override the configuration:
       create_attestations: false
 ```
 
+This provides three output variables:
+
+token             | contains
+----------------- | --------
+`attestation-id`  | The GitHub attestation ID, like `17379361`.
+`attestation-url` | The GitHub attestation URL, like `https://github.com/Pathoschild/SMAPI/attestations/17379361`.
+`attestation-bundle-path` | The absolute path to the file containing the generated attestation, like `/tmp/attestation.json`.
+
+You can reference these as tokens in any later workflow step. For example, if you set
+`id: create-artifacts`, then you can get the attestation URL using
+`${{steps.create-artifacts.outputs.attestation-url}}`.
+
+# More actions
+There's a [rich ecosystem of actions](https://github.com/marketplace?type=actions) you can add to
+your workflow. This section covers a few examples which are particularly relevant to Stardew Valley
+mod authors.
+
+## Upload to GitHub
+Creating a [GitHub release][] lets players download your mods directly from your GitHub repo.
+
+See [ncipollo/release-action](https://github.com/ncipollo/release-action) for the available options.
+
+For example, you can create a release with all the zip files in the `_releases` folder when a tag is
+pushed:
+```yaml
+- name: Upload to GitHub
+  uses: ncipollo/release-action@v1
+  if: github.ref_type == 'tag'
+  with:
+      artifacts: '_releases/*.zip'
+      name: 'Mod version ${{github.ref_name}}'
+      body: |
+          See [release notes][].
+
+          [release notes]: docs/release-notes.md#${{github.ref_name}}
+```
+
+If your workflow [creates an attestation](#upload-release-artifacts), you can reference it in any of
+those fields. For example:
+
+```yaml
+body: See [attestation](${{steps.create-artifacts.outputs.attestation-url}}).
+```
+
+The action has many other options to customize your workflow, like...
+- creating a draft release;
+- creating a Git tag;
+- updating an existing release;
+- auto-generating release notes;
+- etc.
+
+## Upload to Nexus Mods
+You can deploy a mod update to your [Nexus Mods][] mod page automatically, usually based on a
+release tag or branch.
+
+See [Nexus-Mods/upload-action](https://github.com/Nexus-Mods/upload-action) to configure the
+required options.
+
+For example, you can upload an update with a compiled zip file when a tag is pushed (using the tag
+name as the version):
+```yaml
+- name: Upload to Nexus Mods
+  uses: Nexus-Mods/upload-action@<tag>
+  if: github.ref_type == 'tag'
+  with:
+    api_key: ${{secrets.NEXUS_MODS_API_KEY}}
+    file_group_id: <file_group_id>
+    filename: _releases/YourMod-${{github.ref_name}}.zip
+    version: ${{github.ref_name}}
+```
+
+# See also
+* [Release notes](_docs/release-notes.md)
+
 [attestations]: https://docs.github.com/en/actions/concepts/security/artifact-attestations
 [Git flow]: https://www.gitkraken.com/learn/git/git-flow
 [GitHub Actions]: https://github.com/features/actions
+[GitHub release]: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases
+[Nexus Mods]: https://www.nexusmods.com/games/stardewvalley
 [reference assemblies]: https://learn.microsoft.com/en-us/dotnet/standard/assembly/reference-assemblies
 
 [mod build package]: https://smapi.io/package
