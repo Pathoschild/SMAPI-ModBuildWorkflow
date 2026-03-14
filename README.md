@@ -316,6 +316,18 @@ You can optionally override the configuration:
       create_attestations: false
 ```
 
+This provides three output variables:
+
+token             | contains
+----------------- | --------
+`attestation-id`  | The GitHub attestation ID, like `17379361`.
+`attestation-url` | The GitHub attestation URL, like `https://github.com/Pathoschild/SMAPI/attestations/17379361`.
+`attestation-bundle-path` | The absolute path to the file containing the generated attestation, like `/tmp/attestation.json`.
+
+You can reference these as tokens in any later workflow step. For example, if you set
+`id: create-artifacts`, then you can get the attestation URL using
+`${{steps.create-artifacts.outputs.attestation-url}}`.
+
 # See also
 * [Release notes](_docs/release-notes.md)
 

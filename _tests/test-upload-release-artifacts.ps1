@@ -9,10 +9,22 @@
 
 .PARAMETER CreateCombinedZip
     The name of a combined zip file to create containing all the mod zips, or omit to disable.
+
+.PARAMETER AttestationId
+    The expected value of the `attestation-id` output variable.
+
+.PARAMETER AttestationUrl
+    The expected value of the `attestation-url` output variable.
+
+.PARAMETER AttestationBundlePath
+    The expected value of the `attestation-bundle-path` output variable.
 #>
 param(
     [string] $FolderName = '_releases',
-    [string] $CreateCombinedZip = ''
+    [string] $CreateCombinedZip = '',
+    [string] $AttestationId = '',
+    [string] $AttestationUrl = '',
+    [string] $AttestationBundlePath = ''
 )
 
 
@@ -20,8 +32,11 @@ param(
 ## Set up
 ##########
 Write-Host "Running tests for upload-release-artifacts:"
-Write-Host "    FolderName:         '$FolderName'"
-Write-Host "    CreateCombinedZip:  '$CreateCombinedZip'"
+Write-Host "    FolderName:            '$FolderName'"
+Write-Host "    CreateCombinedZip:     '$CreateCombinedZip'"
+Write-Host "    AttestationId:         '$AttestationId'"
+Write-Host "    AttestationUrl:        '$AttestationUrl'"
+Write-Host "    AttestationBundlePath: '$AttestationBundlePath'"
 Write-Host " "
 
 
@@ -51,6 +66,27 @@ foreach ($fileName in @('StableMod 1.0.1-alpha.1.zip', 'BetaMod 2.2.3-alpha.1.zi
 
 
 ##########
-## Test: check uploads
+## Test: output variables were set
+##########
+$outputs = @{
+    'attestation-id'          = $AttestationId
+    'attestation-url'         = $AttestationUrl
+    'attestation-bundle-path' = $AttestationBundlePath
+}
+
+foreach ($outputName in $outputs.Keys) {
+    $value = $outputs[$outputName]
+
+    if ($value) {
+        Write-Host "[OK] Output field '$outputName' is set to '$value'."
+    }
+    else {
+        throw "[FAIL] Expected output '$outputName' not set."
+    }
+}
+
+
+##########
+## Test: files were uploaded
 ##########
 Write-Warning "[INCONCLUSIVE] Checking uploaded artifacts isn't supported."

@@ -17,6 +17,17 @@ inputs:
         required: false
         default: "false"
 
+outputs:
+    attestation-id:
+        description: "The GitHub attestation ID"
+        value: ${{steps.attest.outputs.attestation-id}}
+    attestation-url:
+        description: "The GitHub attestation URL"
+        value: ${{steps.attest.outputs.attestation-url}}
+    attestation-bundle-path:
+        description: "Path to the generated attestation bundle"
+        value: ${{steps.attest.outputs.bundle-path}}
+
 runs:
     using: "composite"
     steps:
@@ -47,6 +58,7 @@ runs:
           if: ${{inputs.create_attestations == 'true'}}
 
         - name: Generate artifact attestations
+          id: attest
           uses: actions/attest-build-provenance@v2
           with:
               subject-path: ${{inputs.path}}/*.zip

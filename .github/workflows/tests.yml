@@ -202,6 +202,9 @@ jobs:
     ##########
     UploadReleaseArtifacts:
         runs-on: ubuntu-latest
+        permissions:
+          id-token: write     # for attestation
+          attestations: write # for attestation
         steps:
             - name: Fetch tests
               uses: actions/checkout@v4
@@ -210,7 +213,10 @@ jobs:
               run: pwsh ./_tests/utilities/create-releases-folder.ps1 -FolderName '_releases'
 
             - name: Upload release artifacts
+              id: upload
               uses: ./upload-release-artifacts
+              with:
+                create_attestations: 'true'
 
             - name: Run tests
-              run: pwsh ./_tests/test-upload-release-artifacts.ps1 -FolderName "_releases"
+              run: pwsh ./_tests/test-upload-release-artifacts.ps1 -FolderName "_releases" -AttestationId "${{steps.upload.outputs.attestation-id}}" -AttestationUrl "${{steps.upload.outputs.attestation-url}}" -AttestationBundlePath "${{steps.upload.outputs.attestation-bundle-path}}"
