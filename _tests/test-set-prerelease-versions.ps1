@@ -68,7 +68,7 @@ foreach ($relativePath in $projectRelativePaths) {
 ## Test: correct edit was applied
 ##########
 function Test-ExpectedProjectContent([string] $projectName, [string] $expectedVersion, [System.Nullable[bool]] $expectEnableModZip) {
-    [xml] $actualContent = Get-Content -Path "$SolutionPath/$projectName/$projectName.csproj" -Raw
+    [xml] $actualContent = Get-Content -LiteralPath "$SolutionPath/$projectName/$projectName.csproj" -Raw
 
     $expectedContent =
         "<Project Sdk=""Microsoft.NET.Sdk"">`n" +

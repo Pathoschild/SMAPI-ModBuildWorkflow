@@ -1,6 +1,9 @@
 [← back to readme](README.md)
 
 # Release notes
+## Upcoming release
+* Fixed error uploading release zips with filenames containing special characters like `[]`.
+
 ## 1.0.0
 Released 14 March 2026.
 

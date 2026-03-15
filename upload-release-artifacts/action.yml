@@ -43,7 +43,7 @@ runs:
               }
 
               foreach ($file in (Get-ChildItem -Path "${{inputs.path}}" -Filter "*.zip")) {
-                  Get-Content $file.FullName -AsByteStream | gh-actions-artifact-client.js upload $file.BaseName
+                  Get-Content -LiteralPath $file.FullName -AsByteStream | gh-actions-artifact-client.js upload $file.BaseName
               }
 
         - name: Upload combined artifacts
